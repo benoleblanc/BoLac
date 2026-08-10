@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { db } from '@/lib/db/db';
 import { haversineDistanceMeters } from '@/lib/geo/haversine';
+import { useMapStore } from '@/stores/mapStore';
 import type { Trip, TrackPoint } from '@/types/trip';
 
 export type TrackingStatus = 'idle' | 'recording' | 'paused';
@@ -201,6 +202,10 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
         status: 'recording',
       };
       await db.trips.add(trip);
+
+      // Évite d'afficher simultanément un trajet historique et la trace en
+      // cours d'enregistrement sur la carte.
+      useMapStore.getState().setViewedTrip(null);
 
       set({
         ...initialState,

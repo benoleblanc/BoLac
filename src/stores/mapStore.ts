@@ -9,16 +9,21 @@ interface MapState {
   zoom: number;
   /** true une fois qu'on a pu centrer sur la position réelle de l'utilisateur. */
   hasCenteredOnUser: boolean;
+  /** Trajet historique (terminé) actuellement affiché sur la carte, depuis l'écran Trajets. */
+  viewedTripId: string | null;
 
   setView: (center: [number, number], zoom: number) => void;
   markCenteredOnUser: () => void;
+  setViewedTrip: (tripId: string | null) => void;
 }
 
 export const useMapStore = create<MapState>((set) => ({
   center: DEFAULT_CENTER,
   zoom: DEFAULT_ZOOM,
   hasCenteredOnUser: false,
+  viewedTripId: null,
 
   setView: (center, zoom) => set({ center, zoom }),
   markCenteredOnUser: () => set({ hasCenteredOnUser: true }),
+  setViewedTrip: (tripId) => set({ viewedTripId: tripId }),
 }));

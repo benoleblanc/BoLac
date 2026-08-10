@@ -34,7 +34,7 @@ export function TrackingHud() {
           : 'text-red-500';
 
   return (
-    <div className="absolute inset-x-2 top-2 z-[1000] rounded-2xl bg-white/95 p-3 shadow-lg backdrop-blur dark:bg-slate-900/95">
+    <div className="rounded-2xl bg-white/95 p-3 shadow-lg backdrop-blur dark:bg-slate-900/95">
       {status === 'paused' && (
         <p className="mb-2 text-center text-xs font-medium text-amber-600 dark:text-amber-400">
           En pause
