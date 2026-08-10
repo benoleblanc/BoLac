@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, useMap } from 'react-leaflet';
 import { useMapStore } from '@/stores/mapStore';
+import { OfflineAwareTileLayer } from '@/features/map/components/OfflineAwareTileLayer';
 import { LiveTrackOverlay } from '@/features/map/components/LiveTrackOverlay';
 import { ViewedTripOverlay } from '@/features/map/components/ViewedTripOverlay';
 import { WaypointMarkers } from '@/features/map/components/WaypointMarkers';
@@ -36,9 +37,9 @@ function RecenterOnUser() {
  * Carte plein cadre avec fond OpenTopoMap, adapté au plein air (relief,
  * sentiers, plans d'eau) plutôt qu'un fond de carte routier générique.
  *
- * Pour l'instant le TileLayer pointe directement sur OpenTopoMap : la
- * couche offline (lecture depuis les tuiles téléchargées en IndexedDB, voir
- * src/types/tile.ts) sera branchée au lot "cache tuiles".
+ * `OfflineAwareTileLayer` lit d'abord les tuiles téléchargées hors ligne
+ * (IndexedDB) avant de retomber sur le réseau — voir DownloadZonePanel pour
+ * le téléchargement d'une zone.
  */
 export function MapView() {
   const center = useMapStore((state) => state.center);
@@ -51,11 +52,7 @@ export function MapView() {
       zoomControl={false}
       className="h-full w-full"
     >
-      <TileLayer
-        attribution='Fonds de carte : &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA), données &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-        maxZoom={17}
-      />
+      <OfflineAwareTileLayer />
       <RecenterOnUser />
       <CurrentLocationMarker />
       <LiveTrackOverlay />

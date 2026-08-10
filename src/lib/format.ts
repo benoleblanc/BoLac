@@ -28,6 +28,13 @@ export function formatKmh(kmh: number): string {
   return `${kmh.toFixed(1)} km/h`;
 }
 
+/** Formate une taille en octets vers Ko ou Mo, selon l'ordre de grandeur. */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${Math.round(bytes)} o`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+}
+
 /** Nom de trajet proposé par défaut, ex. "Sortie du 10 août 2026". */
 export function defaultTripName(date: Date): string {
   const formatted = new Intl.DateTimeFormat('fr-CA', {
