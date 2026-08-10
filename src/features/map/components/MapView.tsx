@@ -4,6 +4,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { LiveTrackOverlay } from '@/features/map/components/LiveTrackOverlay';
 import { ViewedTripOverlay } from '@/features/map/components/ViewedTripOverlay';
 import { WaypointMarkers } from '@/features/map/components/WaypointMarkers';
+import { CurrentLocationMarker } from '@/features/map/components/CurrentLocationMarker';
 import { MapFabStack } from '@/features/map/components/MapFabStack';
 
 /** Recentre la carte sur la géolocalisation de l'utilisateur, une seule fois, si elle est disponible. */
@@ -56,6 +57,7 @@ export function MapView() {
         maxZoom={17}
       />
       <RecenterOnUser />
+      <CurrentLocationMarker />
       <LiveTrackOverlay />
       <ViewedTripOverlay />
       <WaypointMarkers />
