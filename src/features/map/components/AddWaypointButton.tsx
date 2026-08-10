@@ -5,10 +5,21 @@ import { WaypointFormDialog } from '@/features/waypoints/components/WaypointForm
 import { createWaypoint } from '@/lib/db/waypoints.repo';
 import { useMapStore } from '@/stores/mapStore';
 
-function PlusIcon() {
+// Même silhouette de pin que les marqueurs sur la carte (voir
+// features/map/lib/waypointIcon.ts), réduite et surmontée d'un point
+// séparé — plus reconnaissable comme « déposer un point » qu'un simple
+// "+", qui se confond avec un contrôle de zoom.
+function AddWaypointIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5">
-      <path strokeLinecap="round" d="M12 5v14M5 12h14" />
+    <svg viewBox="0 0 24 24" className="h-5 w-5">
+      <g transform="translate(12 9) scale(0.72) translate(-12 -9)">
+        <path
+          fill="currentColor"
+          d="M12 2C7.6 2 4 5.6 4 10c0 5.6 6.6 11.2 7.3 11.8a1 1 0 0 0 1.4 0C13.4 21.2 20 15.6 20 10c0-4.4-3.6-8-8-8Z"
+        />
+        <circle cx="12" cy="10" r="3" className="fill-white dark:fill-slate-900" />
+      </g>
+      <circle cx="12" cy="21.8" r="1.4" fill="currentColor" />
     </svg>
   );
 }
@@ -74,7 +85,7 @@ export function AddWaypointButton() {
   return (
     <>
       <MapFabButton
-        icon={status === 'locating' ? <Spinner /> : <PlusIcon />}
+        icon={status === 'locating' ? <Spinner /> : <AddWaypointIcon />}
         ariaLabel="Ajouter un waypoint ici"
         onClick={handleClick}
         disabled={status === 'locating'}
