@@ -54,7 +54,7 @@ function SettingsIcon() {
 const NAV_ITEMS: NavItem[] = [
   { screen: 'map', label: 'Carte', icon: <MapIcon /> },
   { screen: 'trips', label: 'Trajets', icon: <TripsIcon /> },
-  { screen: 'waypoints', label: 'Mises à l’eau', icon: <WaypointIcon /> },
+  { screen: 'waypoints', label: 'Waypoints', icon: <WaypointIcon /> },
   { screen: 'export', label: 'Export', icon: <ExportIcon /> },
   { screen: 'settings', label: 'Réglages', icon: <SettingsIcon /> },
 ];

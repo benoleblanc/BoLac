@@ -6,7 +6,7 @@ import { useUiStore } from '@/stores/uiStore';
 const SCREEN_TITLES: Record<string, string> = {
   map: 'Carte',
   trips: 'Trajets',
-  waypoints: 'Mises à l’eau',
+  waypoints: 'Waypoints',
   export: 'Export',
   settings: 'Réglages',
 };

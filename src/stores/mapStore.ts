@@ -11,10 +11,13 @@ interface MapState {
   hasCenteredOnUser: boolean;
   /** Trajet historique (terminé) actuellement affiché sur la carte, depuis l'écran Trajets. */
   viewedTripId: string | null;
+  /** Waypoint dont le popup doit s'ouvrir automatiquement (arrivée depuis l'écran Waypoints). */
+  selectedWaypointId: string | null;
 
   setView: (center: [number, number], zoom: number) => void;
   markCenteredOnUser: () => void;
   setViewedTrip: (tripId: string | null) => void;
+  setSelectedWaypoint: (waypointId: string | null) => void;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -22,8 +25,10 @@ export const useMapStore = create<MapState>((set) => ({
   zoom: DEFAULT_ZOOM,
   hasCenteredOnUser: false,
   viewedTripId: null,
+  selectedWaypointId: null,
 
   setView: (center, zoom) => set({ center, zoom }),
   markCenteredOnUser: () => set({ hasCenteredOnUser: true }),
   setViewedTrip: (tripId) => set({ viewedTripId: tripId }),
+  setSelectedWaypoint: (waypointId) => set({ selectedWaypointId: waypointId }),
 }));

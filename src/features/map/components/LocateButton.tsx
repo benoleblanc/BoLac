@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMap } from 'react-leaflet';
+import { MapFabButton, Spinner } from '@/features/map/components/MapFabButton';
 
 function LocateIcon() {
   return (
@@ -10,13 +11,7 @@ function LocateIcon() {
   );
 }
 
-function Spinner() {
-  return (
-    <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-cyan-600 dark:border-slate-600 dark:border-t-cyan-400" />
-  );
-}
-
-/** Bouton flottant pour recentrer la carte sur la position actuelle, à la demande. */
+/** Recentre la carte sur la position actuelle, à la demande. */
 export function LocateButton() {
   const map = useMap();
   const [isLocating, setIsLocating] = useState(false);
@@ -45,21 +40,12 @@ export function LocateButton() {
   }
 
   return (
-    <div className="absolute right-3 bottom-24 z-[999] flex flex-col items-end gap-2">
-      {error && (
-        <p className="max-w-[220px] rounded-lg bg-white/95 px-3 py-1.5 text-right text-xs text-red-600 shadow-lg dark:bg-slate-900/95 dark:text-red-400">
-          {error}
-        </p>
-      )}
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={isLocating}
-        aria-label="Centrer la carte sur ma position"
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg transition-colors hover:bg-slate-100 disabled:opacity-60 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-      >
-        {isLocating ? <Spinner /> : <LocateIcon />}
-      </button>
-    </div>
+    <MapFabButton
+      icon={isLocating ? <Spinner /> : <LocateIcon />}
+      ariaLabel="Centrer la carte sur ma position"
+      onClick={handleClick}
+      disabled={isLocating}
+      error={error}
+    />
   );
 }

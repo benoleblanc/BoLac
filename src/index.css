@@ -17,3 +17,15 @@ body {
   /* Évite le rebond de scroll disgracieux sur mobile pour une app qui se veut app-like. */
   overscroll-behavior: none;
 }
+
+/* Les popups Leaflet (voir WaypointMarkers) ne suivent pas notre variant
+   `dark:` Tailwind — Leaflet les stylise via ses propres classes globales. */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.dark .leaflet-popup-content a {
+  color: #22d3ee;
+}

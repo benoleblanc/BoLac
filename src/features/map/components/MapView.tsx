@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useMapStore } from '@/stores/mapStore';
 import { LiveTrackOverlay } from '@/features/map/components/LiveTrackOverlay';
 import { ViewedTripOverlay } from '@/features/map/components/ViewedTripOverlay';
-import { LocateButton } from '@/features/map/components/LocateButton';
+import { WaypointMarkers } from '@/features/map/components/WaypointMarkers';
+import { MapFabStack } from '@/features/map/components/MapFabStack';
 
 /** Recentre la carte sur la géolocalisation de l'utilisateur, une seule fois, si elle est disponible. */
 function RecenterOnUser() {
@@ -57,7 +58,8 @@ export function MapView() {
       <RecenterOnUser />
       <LiveTrackOverlay />
       <ViewedTripOverlay />
-      <LocateButton />
+      <WaypointMarkers />
+      <MapFabStack />
     </MapContainer>
   );
 }
