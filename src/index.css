@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+/* Bascule le variant `dark:` sur une classe .dark posée sur <html>,
+   plutôt que sur prefers-color-scheme, pour que le toggle de thème
+   (voir src/hooks/useTheme.ts) ait la main. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  margin: 0;
+  /* Évite le rebond de scroll disgracieux sur mobile pour une app qui se veut app-like. */
+  overscroll-behavior: none;
+}
