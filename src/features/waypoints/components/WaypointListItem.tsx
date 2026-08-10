@@ -5,6 +5,8 @@ import { useUiStore } from '@/stores/uiStore';
 import { deleteWaypoint } from '@/lib/db/waypoints.repo';
 import { googleMapsDirectionsUrl } from '@/lib/geo/geoLinks';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { PhotoCaptureButton } from '@/features/photos/components/PhotoCaptureButton';
+import { PhotoGallery } from '@/features/photos/components/PhotoGallery';
 
 const dateFormatter = new Intl.DateTimeFormat('fr-CA', {
   dateStyle: 'medium',
@@ -72,6 +74,10 @@ export function WaypointListItem({ waypoint }: { waypoint: Waypoint }) {
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <PhotoCaptureButton
+            waypointId={waypoint.id}
+            className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
+          />
           <button
             type="button"
             onClick={handleViewOnMap}
@@ -90,6 +96,8 @@ export function WaypointListItem({ waypoint }: { waypoint: Waypoint }) {
           </button>
         </div>
       </div>
+
+      <PhotoGallery waypointId={waypoint.id} />
 
       <a
         href={googleMapsDirectionsUrl(waypoint.lat, waypoint.lon)}

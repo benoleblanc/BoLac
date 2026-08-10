@@ -5,6 +5,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { useUiStore } from '@/stores/uiStore';
 import { deleteTrip } from '@/lib/db/trips.repo';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { PhotoGallery } from '@/features/photos/components/PhotoGallery';
 
 const dateFormatter = new Intl.DateTimeFormat('fr-CA', {
   dateStyle: 'medium',
@@ -96,6 +97,8 @@ export function TripListItem({ trip }: { trip: Trip }) {
           <dd className="font-semibold tabular-nums">{formatKmh(trip.avgSpeedKmh)}</dd>
         </div>
       </dl>
+
+      <PhotoGallery tripId={trip.id} />
 
       <ConfirmDialog
         open={confirmingDelete}

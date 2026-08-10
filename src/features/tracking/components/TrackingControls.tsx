@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useTrackingStore } from '@/stores/trackingStore';
 import { TripNameDialog } from '@/features/tracking/components/TripNameDialog';
+import { PhotoCaptureButton } from '@/features/photos/components/PhotoCaptureButton';
 import { defaultTripName } from '@/lib/format';
 
 type DialogKind = 'start' | 'stop' | null;
@@ -39,6 +40,7 @@ function ControlButton({
 export function TrackingControls() {
   const status = useTrackingStore((s) => s.status);
   const tripName = useTrackingStore((s) => s.tripName);
+  const activeTripId = useTrackingStore((s) => s.activeTripId);
   const startRecording = useTrackingStore((s) => s.startRecording);
   const pauseRecording = useTrackingStore((s) => s.pauseRecording);
   const resumeRecording = useTrackingStore((s) => s.resumeRecording);
@@ -80,6 +82,10 @@ export function TrackingControls() {
             <ControlButton variant="secondary" onClick={pauseRecording}>
               Pause
             </ControlButton>
+            <PhotoCaptureButton
+              tripId={activeTripId}
+              className="rounded-full bg-white p-3.5 text-slate-900 shadow-lg transition-colors hover:bg-slate-100 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            />
             <ControlButton variant="danger" onClick={() => setDialog('stop')}>
               Arrêter
             </ControlButton>
@@ -90,6 +96,10 @@ export function TrackingControls() {
             <ControlButton variant="primary" onClick={resumeRecording}>
               Reprendre
             </ControlButton>
+            <PhotoCaptureButton
+              tripId={activeTripId}
+              className="rounded-full bg-white p-3.5 text-slate-900 shadow-lg transition-colors hover:bg-slate-100 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            />
             <ControlButton variant="danger" onClick={() => setDialog('stop')}>
               Arrêter
             </ControlButton>
