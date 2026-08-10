@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useMapStore } from '@/stores/mapStore';
+import { LiveTrackOverlay } from '@/features/map/components/LiveTrackOverlay';
 
 /** Recentre la carte sur la géolocalisation de l'utilisateur, une seule fois, si elle est disponible. */
 function RecenterOnUser() {
@@ -52,6 +53,7 @@ export function MapView() {
         maxZoom={17}
       />
       <RecenterOnUser />
+      <LiveTrackOverlay />
     </MapContainer>
   );
 }
