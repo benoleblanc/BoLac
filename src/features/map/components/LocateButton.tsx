@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { MapFabButton, Spinner } from '@/features/map/components/MapFabButton';
+import { getCurrentPositionSafe } from '@/lib/geo/getCurrentPosition';
 
 function LocateIcon() {
   return (
@@ -17,7 +18,7 @@ export function LocateButton() {
   const [isLocating, setIsLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleClick() {
+  async function handleClick() {
     if (!('geolocation' in navigator)) {
       setError('Géolocalisation indisponible sur cet appareil.');
       return;
@@ -25,18 +26,13 @@ export function LocateButton() {
 
     setIsLocating(true);
     setError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        map.setView([latitude, longitude], Math.max(map.getZoom(), 14));
-        setIsLocating(false);
-      },
-      () => {
-        setError('Impossible d’obtenir ta position — vérifie les autorisations.');
-        setIsLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
+    const coords = await getCurrentPositionSafe();
+    if (coords) {
+      map.setView([coords.lat, coords.lon], Math.max(map.getZoom(), 14));
+    } else {
+      setError('Impossible d’obtenir ta position — vérifie les autorisations.');
+    }
+    setIsLocating(false);
   }
 
   return (

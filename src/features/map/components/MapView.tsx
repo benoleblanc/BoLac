@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { MapContainer, useMap } from 'react-leaflet';
 import { useMapStore } from '@/stores/mapStore';
+import { getCurrentPositionSafe } from '@/lib/geo/getCurrentPosition';
 import { OfflineAwareTileLayer } from '@/features/map/components/OfflineAwareTileLayer';
 import { LiveTrackOverlay } from '@/features/map/components/LiveTrackOverlay';
 import { ViewedTripOverlay } from '@/features/map/components/ViewedTripOverlay';
@@ -17,17 +18,18 @@ function RecenterOnUser() {
   useEffect(() => {
     if (hasCenteredOnUser || !('geolocation' in navigator)) return;
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        map.setView([position.coords.latitude, position.coords.longitude], 14);
-        markCenteredOnUser();
-      },
-      () => {
-        // Permission refusée ou indisponible : on reste sur le centre par défaut.
-        markCenteredOnUser();
-      },
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
+    let cancelled = false;
+    getCurrentPositionSafe().then((coords) => {
+      if (cancelled) return;
+      // Position indisponible (permission refusée, ou absence de puce GPS
+      // avec repli aussi infructueux) : on reste sur le centre par défaut.
+      if (coords) map.setView([coords.lat, coords.lon], 14);
+      markCenteredOnUser();
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [hasCenteredOnUser, map, markCenteredOnUser]);
 
   return null;

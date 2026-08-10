@@ -4,6 +4,7 @@ import { MapFabButton, Spinner } from '@/features/map/components/MapFabButton';
 import { WaypointFormDialog } from '@/features/waypoints/components/WaypointFormDialog';
 import { useMapInteractionLock } from '@/features/map/hooks/useMapInteractionLock';
 import { createWaypoint } from '@/lib/db/waypoints.repo';
+import { getCurrentPositionSafe } from '@/lib/geo/getCurrentPosition';
 import { useMapStore } from '@/stores/mapStore';
 
 // Même silhouette de pin que les marqueurs sur la carte (voir
@@ -39,7 +40,7 @@ export function AddWaypointButton() {
 
   useMapInteractionLock(status === 'naming');
 
-  function handleClick() {
+  async function handleClick() {
     if (!('geolocation' in navigator)) {
       setError('Géolocalisation indisponible sur cet appareil.');
       return;
@@ -47,17 +48,14 @@ export function AddWaypointButton() {
 
     setStatus('locating');
     setError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setPendingCoords({ lat: position.coords.latitude, lon: position.coords.longitude });
-        setStatus('naming');
-      },
-      () => {
-        setError('Impossible d’obtenir ta position — vérifie les autorisations.');
-        setStatus('idle');
-      },
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
+    const coords = await getCurrentPositionSafe();
+    if (coords) {
+      setPendingCoords(coords);
+      setStatus('naming');
+    } else {
+      setError('Impossible d’obtenir ta position — vérifie les autorisations.');
+      setStatus('idle');
+    }
   }
 
   async function handleConfirm(name: string, note: string) {
