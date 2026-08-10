@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { MapFabButton } from '@/features/map/components/MapFabButton';
 import { DownloadZonePanel } from '@/features/map/components/DownloadZonePanel';
+import { useMapInteractionLock } from '@/features/map/hooks/useMapInteractionLock';
 import { useTileDownloadStore } from '@/stores/tileDownloadStore';
 
 function CloudDownloadIcon() {
@@ -23,6 +24,8 @@ export function DownloadZoneButton() {
   const [open, setOpen] = useState(false);
   const status = useTileDownloadStore((s) => s.status);
   const reset = useTileDownloadStore((s) => s.reset);
+
+  useMapInteractionLock(open);
 
   function handleOpen() {
     // Une complétion précédente jamais "fermée" (panneau fermé pendant que

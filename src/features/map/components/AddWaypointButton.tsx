@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { MapFabButton, Spinner } from '@/features/map/components/MapFabButton';
 import { WaypointFormDialog } from '@/features/waypoints/components/WaypointFormDialog';
+import { useMapInteractionLock } from '@/features/map/hooks/useMapInteractionLock';
 import { createWaypoint } from '@/lib/db/waypoints.repo';
 import { useMapStore } from '@/stores/mapStore';
 
@@ -35,6 +36,8 @@ export function AddWaypointButton() {
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  useMapInteractionLock(status === 'naming');
 
   function handleClick() {
     if (!('geolocation' in navigator)) {
