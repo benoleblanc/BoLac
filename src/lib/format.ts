@@ -23,6 +23,11 @@ export function formatSpeedKmh(speedMs: number | null): string {
   return `${(speedMs * 3.6).toFixed(1)} km/h`;
 }
 
+/** Formate une vitesse déjà en km/h (ex. Trip.avgSpeedKmh) à 1 décimale. */
+export function formatKmh(kmh: number): string {
+  return `${kmh.toFixed(1)} km/h`;
+}
+
 /** Nom de trajet proposé par défaut, ex. "Sortie du 10 août 2026". */
 export function defaultTripName(date: Date): string {
   const formatted = new Intl.DateTimeFormat('fr-CA', {
