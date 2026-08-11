@@ -4,6 +4,12 @@ import { create } from 'zustand';
 const DEFAULT_CENTER: [number, number] = [46.8139, -71.208];
 const DEFAULT_ZOOM = 12;
 
+export interface SearchResultPin {
+  lat: number;
+  lon: number;
+  name: string;
+}
+
 interface MapState {
   center: [number, number];
   zoom: number;
@@ -13,11 +19,14 @@ interface MapState {
   viewedTripId: string | null;
   /** Waypoint dont le popup doit s'ouvrir automatiquement (arrivée depuis l'écran Waypoints). */
   selectedWaypointId: string | null;
+  /** Dernier résultat de recherche de lieu sélectionné — épingle + bandeau sur la carte. */
+  searchResult: SearchResultPin | null;
 
   setView: (center: [number, number], zoom: number) => void;
   markCenteredOnUser: () => void;
   setViewedTrip: (tripId: string | null) => void;
   setSelectedWaypoint: (waypointId: string | null) => void;
+  setSearchResult: (result: SearchResultPin | null) => void;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -26,9 +35,11 @@ export const useMapStore = create<MapState>((set) => ({
   hasCenteredOnUser: false,
   viewedTripId: null,
   selectedWaypointId: null,
+  searchResult: null,
 
   setView: (center, zoom) => set({ center, zoom }),
   markCenteredOnUser: () => set({ hasCenteredOnUser: true }),
   setViewedTrip: (tripId) => set({ viewedTripId: tripId }),
   setSelectedWaypoint: (waypointId) => set({ selectedWaypointId: waypointId }),
+  setSearchResult: (result) => set({ searchResult: result }),
 }));

@@ -203,9 +203,10 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
       };
       await db.trips.add(trip);
 
-      // Évite d'afficher simultanément un trajet historique et la trace en
-      // cours d'enregistrement sur la carte.
+      // Évite d'afficher simultanément un trajet historique (ou un repère
+      // de recherche) et la trace en cours d'enregistrement sur la carte.
       useMapStore.getState().setViewedTrip(null);
+      useMapStore.getState().setSearchResult(null);
 
       set({
         ...initialState,

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Map as LeafletMap } from 'leaflet';
 import { Portal } from '@/components/Portal';
 import { searchPlaces, type PlaceResult } from '@/lib/geocoding/searchPlaces';
+import { useMapStore } from '@/stores/mapStore';
 
 const DEBOUNCE_MS = 500;
 
@@ -14,6 +15,7 @@ interface PlaceSearchPanelProps {
 type Status = 'idle' | 'loading' | 'error';
 
 export function PlaceSearchPanel({ open, map, onClose }: PlaceSearchPanelProps) {
+  const setSearchResult = useMapStore((s) => s.setSearchResult);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PlaceResult[]>([]);
   const [status, setStatus] = useState<Status>('idle');
@@ -67,6 +69,9 @@ export function PlaceSearchPanel({ open, map, onClose }: PlaceSearchPanelProps) 
       ],
       { padding: [32, 32], maxZoom: 15 },
     );
+    // Épingle l'emplacement exact — un fitBounds seul peut cadrer toute une
+    // région (ex. une montagne dans son massif) sans indiquer où regarder.
+    setSearchResult({ lat: result.lat, lon: result.lon, name: result.name });
     onClose();
   }
 
