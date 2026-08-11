@@ -37,3 +37,8 @@ export async function deleteZone(zoneId: string): Promise<void> {
     await db.zones.delete(zoneId);
   });
 }
+
+/** Renomme une zone déjà téléchargée (ex. remplacer un nom par défaut par un vrai nom de lieu). */
+export async function renameZone(zoneId: string, name: string): Promise<void> {
+  await db.zones.update(zoneId, { name });
+}

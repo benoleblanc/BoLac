@@ -26,9 +26,17 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="flex h-full flex-col">
       <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 pt-[env(safe-area-inset-top)] dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="py-3 text-lg font-semibold">
-          {SCREEN_TITLES[activeScreen] ?? 'BoLac'}
-        </h1>
+        <div className="flex items-center gap-2 py-2.5">
+          <img src="/icons/icon.svg" alt="" className="h-8 w-8 shrink-0 rounded-lg" />
+          <div className="leading-tight">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
+              BoLac
+            </p>
+            <h1 className="text-base font-semibold">
+              {SCREEN_TITLES[activeScreen] ?? 'BoLac'}
+            </h1>
+          </div>
+        </div>
         <ThemeToggle />
       </header>
 
