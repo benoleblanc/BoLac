@@ -6,6 +6,7 @@ import { TripsScreen } from '@/features/trips/screens/TripsScreen';
 import { WaypointsScreen } from '@/features/waypoints/screens/WaypointsScreen';
 import { ExportScreen } from '@/features/export/screens/ExportScreen';
 import { SettingsScreen } from '@/features/settings/screens/SettingsScreen';
+import { ScreenDimOverlay } from '@/features/tracking/components/ScreenDimOverlay';
 
 function App() {
   useTheme();
@@ -18,6 +19,7 @@ function App() {
       {activeScreen === 'waypoints' && <WaypointsScreen />}
       {activeScreen === 'export' && <ExportScreen />}
       {activeScreen === 'settings' && <SettingsScreen />}
+      <ScreenDimOverlay />
     </Layout>
   );
 }

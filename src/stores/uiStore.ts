@@ -16,8 +16,17 @@ function getInitialTheme(): Theme {
 interface UiState {
   activeScreen: Screen;
   theme: Theme;
+  /**
+   * Nombre de dialogues (Portal) actuellement ouverts, tous confondus.
+   * Sert à mettre en pause l'assombrissement automatique de l'écran
+   * pendant l'enregistrement (voir ScreenDimOverlay) : pas question que
+   * l'écran devienne noir en plein milieu d'une saisie.
+   */
+  openPortalCount: number;
   setActiveScreen: (screen: Screen) => void;
   toggleTheme: () => void;
+  incrementPortalCount: () => void;
+  decrementPortalCount: () => void;
 }
 
 /**
@@ -27,6 +36,7 @@ interface UiState {
 export const useUiStore = create<UiState>((set, get) => ({
   activeScreen: 'map',
   theme: getInitialTheme(),
+  openPortalCount: 0,
 
   setActiveScreen: (screen) => set({ activeScreen: screen }),
 
@@ -35,4 +45,7 @@ export const useUiStore = create<UiState>((set, get) => ({
     localStorage.setItem(THEME_STORAGE_KEY, next);
     set({ theme: next });
   },
+
+  incrementPortalCount: () => set((s) => ({ openPortalCount: s.openPortalCount + 1 })),
+  decrementPortalCount: () => set((s) => ({ openPortalCount: Math.max(0, s.openPortalCount - 1) })),
 }));
