@@ -7,6 +7,7 @@ import { LiveTrackOverlay } from '@/features/map/components/LiveTrackOverlay';
 import { ViewedTripOverlay } from '@/features/map/components/ViewedTripOverlay';
 import { WaypointMarkers } from '@/features/map/components/WaypointMarkers';
 import { SearchResultMarker } from '@/features/map/components/SearchResultMarker';
+import { LongPressWaypoint } from '@/features/map/components/LongPressWaypoint';
 import { CurrentLocationMarker } from '@/features/map/components/CurrentLocationMarker';
 import { MapFabStack } from '@/features/map/components/MapFabStack';
 
@@ -90,6 +91,7 @@ export function MapView() {
       <ViewedTripOverlay />
       <WaypointMarkers />
       <SearchResultMarker />
+      <LongPressWaypoint />
       <MapFabStack />
     </MapContainer>
   );
