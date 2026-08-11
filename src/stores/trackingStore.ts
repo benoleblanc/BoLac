@@ -25,6 +25,12 @@ interface TrackingState {
   elapsedMs: number;
   currentAccuracyM: number | null;
   gpsError: string | null;
+  /**
+   * true si l'écran est activement maintenu allumé (Wake Lock) pendant
+   * l'enregistrement — sur mobile, l'écran qui se verrouille suspend le
+   * suivi GPS, ce n'est pas une limite de BoLac mais du navigateur.
+   */
+  wakeLockActive: boolean;
   /** Horloge murale (epoch ms) du début de l'enregistrement — sert au calcul du temps écoulé réel. */
   recordingStartedAt: number | null;
   /** Cumul du temps passé en pause, à soustraire du temps écoulé. */
@@ -50,6 +56,7 @@ const initialState = {
   elapsedMs: 0,
   currentAccuracyM: null as number | null,
   gpsError: null as string | null,
+  wakeLockActive: false,
   recordingStartedAt: null as number | null,
   pausedAccumMs: 0,
   pausedAt: null as number | null,
@@ -77,6 +84,7 @@ function activeElapsedMs(
 let watchId: number | null = null;
 let tickIntervalId: ReturnType<typeof setInterval> | null = null;
 let unflushedPoints: TrackPoint[] = [];
+let wakeLockSentinel: WakeLockSentinel | null = null;
 
 async function flushPoints(): Promise<void> {
   if (unflushedPoints.length === 0) return;
@@ -182,7 +190,50 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
         set((s) => ({ elapsedMs: activeElapsedMs(s, Date.now()) }));
       }, 1000);
     }
+    void requestWakeLock();
   }
+
+  /**
+   * Empêche l'écran de s'éteindre/se verrouiller automatiquement tant que
+   * l'enregistrement est actif : sur mobile, un écran verrouillé suspend
+   * l'exécution JS (donc watchPosition) — limite du navigateur, pas de
+   * BoLac. Sans effet si l'API n'est pas supportée (échoue silencieusement).
+   */
+  async function requestWakeLock(): Promise<void> {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      wakeLockSentinel = await navigator.wakeLock.request('screen');
+      set({ wakeLockActive: true });
+      wakeLockSentinel.addEventListener('release', () => {
+        wakeLockSentinel = null;
+        set({ wakeLockActive: false });
+      });
+    } catch {
+      // Refusé par le navigateur/OS (ex: mode économie de batterie) : on
+      // continue sans, le suivi GPS reste actif tant que l'écran ne
+      // s'éteint pas de lui-même.
+      wakeLockSentinel = null;
+      set({ wakeLockActive: false });
+    }
+  }
+
+  async function releaseWakeLock(): Promise<void> {
+    if (wakeLockSentinel) {
+      await wakeLockSentinel.release().catch(() => undefined);
+      wakeLockSentinel = null;
+    }
+    set({ wakeLockActive: false });
+  }
+
+  // Le navigateur relâche automatiquement le wake lock quand l'onglet perd
+  // la visibilité (changement d'app, écran éteint manuellement) ; on le
+  // redemande dès qu'on redevient visible, tant que l'enregistrement est
+  // toujours en cours.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && get().status === 'recording') {
+      void requestWakeLock();
+    }
+  });
 
   return {
     ...initialState,
@@ -221,6 +272,7 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
     pauseRecording: () => {
       const now = Date.now();
       stopWatch();
+      void releaseWakeLock();
       set((s) => ({ status: 'paused', pausedAt: now, elapsedMs: activeElapsedMs(s, now) }));
     },
 
@@ -235,6 +287,7 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
 
     stopRecording: async (finalName) => {
       stopWatch();
+      void releaseWakeLock();
       await flushPoints();
 
       const state = get();

@@ -21,6 +21,7 @@ export function TrackingHud() {
   const elapsedMs = useTrackingStore((s) => s.elapsedMs);
   const currentAccuracyM = useTrackingStore((s) => s.currentAccuracyM);
   const gpsError = useTrackingStore((s) => s.gpsError);
+  const wakeLockActive = useTrackingStore((s) => s.wakeLockActive);
 
   if (status === 'idle') return null;
 
@@ -55,6 +56,13 @@ export function TrackingHud() {
         Précision GPS :{' '}
         {currentAccuracyM !== null ? `±${Math.round(currentAccuracyM)} m` : '—'}
       </p>
+      {status === 'recording' && (
+        <p className="mt-1 text-center text-[10px] text-slate-400 dark:text-slate-500">
+          {wakeLockActive
+            ? '🔒 Écran maintenu allumé pour un suivi continu'
+            : '⚠️ Garde le téléphone déverrouillé — le suivi peut s’interrompre en veille'}
+        </p>
+      )}
     </div>
   );
 }
