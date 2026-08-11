@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { MapContainer, useMap } from 'react-leaflet';
+import { MapContainer, useMap, useMapEvents } from 'react-leaflet';
 import { useMapStore } from '@/stores/mapStore';
 import { getCurrentPositionSafe } from '@/lib/geo/getCurrentPosition';
 import { OfflineAwareTileLayer } from '@/features/map/components/OfflineAwareTileLayer';
@@ -37,6 +37,33 @@ function RecenterOnUser() {
 }
 
 /**
+ * Garde `mapStore.center`/`zoom` synchronisés avec la position réelle de la
+ * carte en tout temps (déplacement manuel, recherche, "voir sur la carte",
+ * bouton localiser...). Sans ça, revenir sur l'écran Carte après avoir
+ * visité un autre onglet retombe sur la position par défaut : le
+ * MapContainer est entièrement démonté/remonté à chaque changement d'écran
+ * (voir App.tsx), et seul le centrage automatique initial était sauvegardé
+ * — un déplacement manuel ou une action sur la carte modifiait la vue en
+ * direct sans jamais l'écrire dans le store.
+ */
+function PersistMapView() {
+  const setView = useMapStore((state) => state.setView);
+
+  const map = useMapEvents({
+    moveend: () => {
+      const center = map.getCenter();
+      setView([center.lat, center.lng], map.getZoom());
+    },
+    zoomend: () => {
+      const center = map.getCenter();
+      setView([center.lat, center.lng], map.getZoom());
+    },
+  });
+
+  return null;
+}
+
+/**
  * Carte plein cadre avec fond OpenTopoMap, adapté au plein air (relief,
  * sentiers, plans d'eau) plutôt qu'un fond de carte routier générique.
  *
@@ -57,6 +84,7 @@ export function MapView() {
     >
       <OfflineAwareTileLayer />
       <RecenterOnUser />
+      <PersistMapView />
       <CurrentLocationMarker />
       <LiveTrackOverlay />
       <ViewedTripOverlay />
