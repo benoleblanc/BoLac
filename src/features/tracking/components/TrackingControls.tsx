@@ -3,6 +3,7 @@ import { useTrackingStore } from '@/stores/trackingStore';
 import { TripNameDialog } from '@/features/tracking/components/TripNameDialog';
 import { PhotoCaptureButton } from '@/features/photos/components/PhotoCaptureButton';
 import { defaultTripName } from '@/lib/format';
+import { DEFAULT_ACTIVITY, type ActivityType } from '@/types/activity';
 
 type DialogKind = 'start' | 'stop' | null;
 
@@ -48,11 +49,12 @@ export function TrackingControls() {
 
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [activityType, setActivityType] = useState<ActivityType>(DEFAULT_ACTIVITY);
 
   async function handleStartConfirm(name: string) {
     setIsBusy(true);
     try {
-      await startRecording(name);
+      await startRecording(name, activityType);
       setDialog(null);
     } finally {
       setIsBusy(false);
@@ -73,7 +75,15 @@ export function TrackingControls() {
     <>
       <div className="absolute inset-x-0 bottom-4 z-[1000] flex justify-center gap-3">
         {status === 'idle' && (
-          <ControlButton variant="primary" onClick={() => setDialog('start')}>
+          <ControlButton
+            variant="primary"
+            onClick={() => {
+              // Repart toujours du sport le plus pratiqué, plutôt que de
+              // garder le dernier choix d'une session précédente.
+              setActivityType(DEFAULT_ACTIVITY);
+              setDialog('start');
+            }}
+          >
             Démarrer l’enregistrement
           </ControlButton>
         )}
@@ -113,6 +123,8 @@ export function TrackingControls() {
         defaultName={defaultTripName(new Date())}
         confirmLabel="Démarrer"
         busy={isBusy}
+        activityType={activityType}
+        onActivityTypeChange={setActivityType}
         onConfirm={handleStartConfirm}
         onCancel={() => setDialog(null)}
       />

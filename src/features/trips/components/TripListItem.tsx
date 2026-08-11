@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Trip } from '@/types/trip';
-import { formatDistanceKm, formatDuration, formatKmh } from '@/lib/format';
+import { ACTIVITY_LABELS } from '@/types/activity';
+import { formatDistanceKm, formatDuration, formatElevation, formatKmh } from '@/lib/format';
 import { useMapStore } from '@/stores/mapStore';
 import { useUiStore } from '@/stores/uiStore';
 import { deleteTrip } from '@/lib/db/trips.repo';
@@ -57,7 +58,9 @@ export function TripListItem({ trip }: { trip: Trip }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate font-medium">{trip.name}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{startedLabel}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {startedLabel} · {ACTIVITY_LABELS[trip.activityType]}
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {trip.status !== 'completed' && (
@@ -83,7 +86,7 @@ export function TripListItem({ trip }: { trip: Trip }) {
           </button>
         </div>
       </div>
-      <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
+      <dl className="mt-2 grid grid-cols-4 gap-2 text-center text-sm">
         <div>
           <dt className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Distance</dt>
           <dd className="font-semibold tabular-nums">{formatDistanceKm(trip.distanceMeters)}</dd>
@@ -95,6 +98,10 @@ export function TripListItem({ trip }: { trip: Trip }) {
         <div>
           <dt className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Moyenne</dt>
           <dd className="font-semibold tabular-nums">{formatKmh(trip.avgSpeedKmh)}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Dénivelé +</dt>
+          <dd className="font-semibold tabular-nums">{formatElevation(trip.elevationGainM)}</dd>
         </div>
       </dl>
 

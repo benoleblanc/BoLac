@@ -35,6 +35,12 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
 
+/** Formate une élévation (m) arrondie, ex. "423 m", ou "—" si inconnue. */
+export function formatElevation(meters: number | null): string {
+  if (meters === null) return '—';
+  return `${Math.round(meters)} m`;
+}
+
 /** Nom de trajet proposé par défaut, ex. "Sortie du 10 août 2026". */
 export function defaultTripName(date: Date): string {
   const formatted = new Intl.DateTimeFormat('fr-CA', {

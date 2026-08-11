@@ -1,5 +1,6 @@
 import type { Trip, TrackPoint } from '@/types/trip';
 import type { Waypoint } from '@/types/waypoint';
+import { ACTIVITY_LABELS } from '@/types/activity';
 
 /** Échappe les caractères XML spéciaux dans un texte libre (nom, note...). */
 export function escapeXml(text: string): string {
@@ -53,6 +54,7 @@ export function buildGpx(
 ${wptTags}
   <trk>
     <name>${escapeXml(trip.name)}</name>
+    <type>${escapeXml(ACTIVITY_LABELS[trip.activityType])}</type>
     <trkseg>
 ${trkptTags}
     </trkseg>

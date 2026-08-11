@@ -1,4 +1,6 @@
-/** Un trajet enregistré (sortie en canot, kayak ou paddleboard). */
+import type { ActivityType } from '@/types/activity';
+
+/** Un trajet enregistré (sortie en canot, kayak, paddleboard, randonnée, vélo...). */
 export interface Trip {
   id: string;
   name: string;
@@ -9,6 +11,11 @@ export interface Trip {
   durationMs: number;
   avgSpeedKmh: number;
   status: 'recording' | 'paused' | 'completed';
+  activityType: ActivityType;
+  /** Somme des montées significatives (m), lissée pour ignorer le bruit GPS d'altitude. */
+  elevationGainM: number;
+  /** Somme des descentes significatives (m, valeur positive), même lissage. */
+  elevationLossM: number;
 }
 
 /** Un point GPS relevé pendant l'enregistrement d'un trajet. */

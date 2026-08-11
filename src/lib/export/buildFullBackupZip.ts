@@ -40,6 +40,9 @@ export async function buildFullBackupZip(): Promise<Blob> {
       durationMs: trip.durationMs,
       avgSpeedKmh: trip.avgSpeedKmh,
       status: trip.status,
+      activityType: trip.activityType,
+      elevationGainM: trip.elevationGainM,
+      elevationLossM: trip.elevationLossM,
       gpxFile: `trips/${gpxFileName}`,
     });
   }

@@ -1,5 +1,5 @@
 import { useTrackingStore } from '@/stores/trackingStore';
-import { formatDistanceKm, formatDuration, formatSpeedKmh } from '@/lib/format';
+import { formatDistanceKm, formatDuration, formatElevation, formatSpeedKmh } from '@/lib/format';
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -20,6 +20,9 @@ export function TrackingHud() {
   const avgSpeedMs = useTrackingStore((s) => s.avgSpeedMs);
   const elapsedMs = useTrackingStore((s) => s.elapsedMs);
   const currentAccuracyM = useTrackingStore((s) => s.currentAccuracyM);
+  const currentElevationM = useTrackingStore((s) => s.currentElevationM);
+  const elevationGainM = useTrackingStore((s) => s.elevationGainM);
+  const elevationLossM = useTrackingStore((s) => s.elevationLossM);
   const gpsError = useTrackingStore((s) => s.gpsError);
   const wakeLockActive = useTrackingStore((s) => s.wakeLockActive);
 
@@ -51,6 +54,11 @@ export function TrackingHud() {
         <Stat label="Vitesse" value={formatSpeedKmh(currentSpeedMs)} />
         <Stat label="Moyenne" value={formatSpeedKmh(avgSpeedMs)} />
         <Stat label="Temps" value={formatDuration(elapsedMs)} />
+      </div>
+      <div className="mt-2 grid grid-cols-3 gap-2 border-t border-slate-100 pt-2 text-center dark:border-slate-800">
+        <Stat label="Élévation actuelle" value={formatElevation(currentElevationM)} />
+        <Stat label="Dénivelé +" value={formatElevation(elevationGainM)} />
+        <Stat label="Dénivelé -" value={formatElevation(elevationLossM)} />
       </div>
       <p className={`mt-2 text-center text-xs ${accuracyColor}`}>
         Précision GPS :{' '}

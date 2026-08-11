@@ -3,6 +3,7 @@ import { db } from '@/lib/db/db';
 import { haversineDistanceMeters } from '@/lib/geo/haversine';
 import { useMapStore } from '@/stores/mapStore';
 import type { Trip, TrackPoint } from '@/types/trip';
+import { DEFAULT_ACTIVITY, type ActivityType } from '@/types/activity';
 
 export type TrackingStatus = 'idle' | 'recording' | 'paused';
 
@@ -12,11 +13,19 @@ const MAX_ACCEPTABLE_ACCURACY_M = 100;
 const MAX_PLAUSIBLE_SPEED_MS = 12.5; // ~45 km/h
 /** Nombre de points bufferisés avant écriture en base, pour limiter la perte en cas de crash. */
 const FLUSH_EVERY_N_POINTS = 20;
+/**
+ * Variation d'altitude (m) en dessous de laquelle on considère que c'est du
+ * bruit GPS plutôt qu'un vrai changement d'élévation. Le GPS d'un téléphone
+ * est nettement moins précis en altitude qu'en position horizontale ; sans
+ * ce filtre, le dénivelé cumulé gonfle artificiellement même à plat.
+ */
+const ELEVATION_NOISE_THRESHOLD_M = 2;
 
 interface TrackingState {
   status: TrackingStatus;
   activeTripId: string | null;
   tripName: string;
+  activityType: ActivityType;
   points: TrackPoint[];
   lastPoint: TrackPoint | null;
   distanceMeters: number;
@@ -24,6 +33,12 @@ interface TrackingState {
   avgSpeedMs: number;
   elapsedMs: number;
   currentAccuracyM: number | null;
+  /** Dernière altitude GPS reçue (m), sans lissage — pour affichage seulement. */
+  currentElevationM: number | null;
+  /** Cumul des montées significatives (m) depuis le début de l'enregistrement. */
+  elevationGainM: number;
+  /** Cumul des descentes significatives (m, valeur positive) depuis le début. */
+  elevationLossM: number;
   gpsError: string | null;
   /**
    * true si l'écran est activement maintenu allumé (Wake Lock) pendant
@@ -38,7 +53,7 @@ interface TrackingState {
   /** epoch ms du début de la pause en cours, s'il y en a une. */
   pausedAt: number | null;
 
-  startRecording: (name: string) => Promise<void>;
+  startRecording: (name: string, activityType: ActivityType) => Promise<void>;
   pauseRecording: () => void;
   resumeRecording: () => void;
   stopRecording: (finalName?: string) => Promise<void>;
@@ -48,6 +63,7 @@ const initialState = {
   status: 'idle' as TrackingStatus,
   activeTripId: null,
   tripName: '',
+  activityType: DEFAULT_ACTIVITY,
   points: [] as TrackPoint[],
   lastPoint: null as TrackPoint | null,
   distanceMeters: 0,
@@ -55,6 +71,9 @@ const initialState = {
   avgSpeedMs: 0,
   elapsedMs: 0,
   currentAccuracyM: null as number | null,
+  currentElevationM: null as number | null,
+  elevationGainM: 0,
+  elevationLossM: 0,
   gpsError: null as string | null,
   wakeLockActive: false,
   recordingStartedAt: null as number | null,
@@ -85,6 +104,14 @@ let watchId: number | null = null;
 let tickIntervalId: ReturnType<typeof setInterval> | null = null;
 let unflushedPoints: TrackPoint[] = [];
 let wakeLockSentinel: WakeLockSentinel | null = null;
+/**
+ * Dernière altitude retenue comme référence pour le calcul du dénivelé
+ * (distincte de `currentElevationM`, qui suit chaque lecture brute pour
+ * l'affichage). Ne bouge que quand une variation dépasse le seuil de bruit
+ * — persiste à travers une pause/reprise, remise à zéro seulement au
+ * démarrage d'un nouvel enregistrement.
+ */
+let elevationBaselineM: number | null = null;
 
 async function flushPoints(): Promise<void> {
   if (unflushedPoints.length === 0) return;
@@ -158,6 +185,25 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
     const elapsedNowMs = activeElapsedMs(state, Date.now());
     const avgSpeedMs = elapsedNowMs > 0 ? distanceMeters / (elapsedNowMs / 1000) : 0;
 
+    // Dénivelé : on compare chaque nouvelle altitude à la dernière référence
+    // "significative", pas au point précédent — sinon des micro-oscillations
+    // de bruit GPS s'additionnent indéfiniment même à plat. Le seuil ignore
+    // les variations sous ELEVATION_NOISE_THRESHOLD_M, et la référence
+    // n'avance que quand un vrai changement est détecté.
+    let { elevationGainM, elevationLossM } = state;
+    if (altitude !== null) {
+      if (elevationBaselineM === null) {
+        elevationBaselineM = altitude;
+      } else {
+        const deltaElevation = altitude - elevationBaselineM;
+        if (Math.abs(deltaElevation) >= ELEVATION_NOISE_THRESHOLD_M) {
+          if (deltaElevation > 0) elevationGainM += deltaElevation;
+          else elevationLossM += -deltaElevation;
+          elevationBaselineM = altitude;
+        }
+      }
+    }
+
     set({
       points: [...state.points, point],
       lastPoint: point,
@@ -165,6 +211,9 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
       currentSpeedMs,
       avgSpeedMs,
       elapsedMs: elapsedNowMs,
+      currentElevationM: altitude,
+      elevationGainM,
+      elevationLossM,
     });
 
     unflushedPoints.push(point);
@@ -238,7 +287,7 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
   return {
     ...initialState,
 
-    startRecording: async (name) => {
+    startRecording: async (name, activityType) => {
       const tripId = crypto.randomUUID();
       const now = Date.now();
       const trip: Trip = {
@@ -251,6 +300,9 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
         durationMs: 0,
         avgSpeedKmh: 0,
         status: 'recording',
+        activityType,
+        elevationGainM: 0,
+        elevationLossM: 0,
       };
       await db.trips.add(trip);
 
@@ -259,11 +311,13 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
       useMapStore.getState().setViewedTrip(null);
       useMapStore.getState().setSearchResult(null);
 
+      elevationBaselineM = null;
       set({
         ...initialState,
         status: 'recording',
         activeTripId: tripId,
         tripName: name,
+        activityType,
         recordingStartedAt: now,
       });
       startWatch();
@@ -303,6 +357,8 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
           durationMs: finalElapsedMs,
           avgSpeedKmh,
           status: 'completed',
+          elevationGainM: state.elevationGainM,
+          elevationLossM: state.elevationLossM,
         });
       }
 

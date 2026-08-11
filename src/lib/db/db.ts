@@ -32,6 +32,32 @@ export class BoLacDB extends Dexie {
       tiles: 'key, zoneId, [z+x+y]',
       zones: 'id, status, createdAt',
     });
+
+    // v2 : ajout du sport pratiqué (activityType) et du dénivelé (gain/perte)
+    // sur Trip, pour permettre d'autres activités de plein air que les
+    // sports nautiques. Aucun nouvel index requis, mais les trajets déjà
+    // enregistrés n'ont pas ces champs — on les complète avec des valeurs
+    // par défaut neutres pour que le reste de l'app puisse les lire sans
+    // undefined.
+    this.version(2)
+      .stores({
+        trips: 'id, status, createdAt',
+        trackPoints: 'id, tripId, timestamp',
+        waypoints: 'id, tripId, createdAt',
+        photos: 'id, tripId, waypointId, takenAt',
+        tiles: 'key, zoneId, [z+x+y]',
+        zones: 'id, status, createdAt',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table('trips')
+          .toCollection()
+          .modify((trip) => {
+            if (trip.activityType === undefined) trip.activityType = 'kayak';
+            if (trip.elevationGainM === undefined) trip.elevationGainM = 0;
+            if (trip.elevationLossM === undefined) trip.elevationLossM = 0;
+          });
+      });
   }
 }
 
