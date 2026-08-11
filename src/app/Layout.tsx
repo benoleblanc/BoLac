@@ -8,7 +8,7 @@ const SCREEN_TITLES: Record<string, string> = {
   trips: 'Trajets',
   waypoints: 'Waypoints',
   export: 'Export',
-  settings: 'Réglages',
+  settings: 'Cartes hors ligne',
 };
 
 interface LayoutProps {

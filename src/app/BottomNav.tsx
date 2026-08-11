@@ -42,11 +42,15 @@ function ExportIcon() {
   );
 }
 
-function SettingsIcon() {
+function OfflineMapIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-6 w-6">
-      <circle cx="12" cy="12" r="3" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M7 18a4.5 4.5 0 0 1-1.5-8.74 5.5 5.5 0 0 1 10.7-2.24A4.5 4.5 0 0 1 17 18H7Z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 11v6m0 0-2.5-2.5M12 17l2.5-2.5" />
     </svg>
   );
 }
@@ -56,7 +60,7 @@ const NAV_ITEMS: NavItem[] = [
   { screen: 'trips', label: 'Trajets', icon: <TripsIcon /> },
   { screen: 'waypoints', label: 'Waypoints', icon: <WaypointIcon /> },
   { screen: 'export', label: 'Export', icon: <ExportIcon /> },
-  { screen: 'settings', label: 'Réglages', icon: <SettingsIcon /> },
+  { screen: 'settings', label: 'Hors ligne', icon: <OfflineMapIcon /> },
 ];
 
 /** Navigation basse mobile-first — remplace un routeur pour cette app à 5 écrans fixes. */
