@@ -2,7 +2,7 @@ import type { Trip, TrackPoint } from '@/types/trip';
 import type { Waypoint } from '@/types/waypoint';
 
 /** Échappe les caractères XML spéciaux dans un texte libre (nom, note...). */
-function escapeXml(text: string): string {
+export function escapeXml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
