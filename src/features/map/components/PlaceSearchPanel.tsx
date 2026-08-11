@@ -124,8 +124,11 @@ export function PlaceSearchPanel({ open, map, onClose }: PlaceSearchPanelProps) 
             )}
             {results.length > 0 && (
               <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-                {results.map((result) => (
-                  <li key={result.id}>
+                {results.map((result, index) => (
+                  // Photon renvoie parfois deux entrées avec le même
+                  // osm_type/osm_id pour un même lieu (constaté en test) —
+                  // l'index garantit une clé unique quoi qu'il arrive.
+                  <li key={`${result.id}-${index}`}>
                     <button
                       type="button"
                       onClick={() => handleSelect(result)}

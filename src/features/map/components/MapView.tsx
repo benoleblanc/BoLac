@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { MapContainer, useMap, useMapEvents } from 'react-leaflet';
 import { useMapStore } from '@/stores/mapStore';
 import { getCurrentPositionSafe } from '@/lib/geo/getCurrentPosition';
-import { OfflineAwareTileLayer } from '@/features/map/components/OfflineAwareTileLayer';
+import { BaseTileLayer } from '@/features/map/components/BaseTileLayer';
 import { LiveTrackOverlay } from '@/features/map/components/LiveTrackOverlay';
 import { ViewedTripOverlay } from '@/features/map/components/ViewedTripOverlay';
 import { WaypointMarkers } from '@/features/map/components/WaypointMarkers';
@@ -65,10 +65,10 @@ function PersistMapView() {
 }
 
 /**
- * Carte plein cadre avec fond OpenTopoMap, adapté au plein air (relief,
- * sentiers, plans d'eau) plutôt qu'un fond de carte routier générique.
- *
- * `OfflineAwareTileLayer` lit d'abord les tuiles téléchargées hors ligne
+ * Carte plein cadre. `BaseTileLayer` choisit le fond selon
+ * `mapStore.baseLayer` (Plein air/OpenTopoMap par défaut, adapté au plein
+ * air — relief, sentiers, plans d'eau) ; pour le fond "Plein air",
+ * `OfflineTileLayer` lit d'abord les tuiles téléchargées hors ligne
  * (IndexedDB) avant de retomber sur le réseau — voir DownloadZonePanel pour
  * le téléchargement d'une zone.
  */
@@ -83,7 +83,7 @@ export function MapView() {
       zoomControl={false}
       className="h-full w-full"
     >
-      <OfflineAwareTileLayer />
+      <BaseTileLayer />
       <RecenterOnUser />
       <PersistMapView />
       <CurrentLocationMarker />

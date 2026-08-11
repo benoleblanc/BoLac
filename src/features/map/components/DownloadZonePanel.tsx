@@ -145,8 +145,10 @@ export function DownloadZonePanel({ open, map, onClose }: DownloadZonePanelProps
             <>
               <h2 className="mb-1 text-base font-semibold">Télécharger cette zone</h2>
               <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
-                La zone actuellement affichée à l’écran sera téléchargée pour un usage hors ligne.
-                Ferme ce panneau pour ajuster le cadrage si besoin, puis rouvre-le.
+                La zone actuellement affichée à l’écran sera téléchargée pour un usage hors ligne,
+                toujours avec le fond « Plein air » (seul fond disponible hors ligne, peu importe
+                celui affiché en ce moment). Ferme ce panneau pour ajuster le cadrage si besoin,
+                puis rouvre-le.
               </p>
 
               <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
