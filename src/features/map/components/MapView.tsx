@@ -37,6 +37,25 @@ function RecenterOnUser() {
   return null;
 }
 
+/** Cadre la carte sur les limites d'une zone hors ligne consultée depuis "Cartes hors ligne". */
+function FitViewedZone() {
+  const map = useMap();
+  const bounds = useMapStore((state) => state.viewedZone?.bounds);
+
+  useEffect(() => {
+    if (!bounds) return;
+    map.fitBounds(
+      [
+        [bounds.south, bounds.west],
+        [bounds.north, bounds.east],
+      ],
+      { padding: [32, 32] },
+    );
+  }, [bounds, map]);
+
+  return null;
+}
+
 /**
  * Garde `mapStore.center`/`zoom` synchronisés avec la position réelle de la
  * carte en tout temps (déplacement manuel, recherche, "voir sur la carte",
@@ -85,6 +104,7 @@ export function MapView() {
     >
       <BaseTileLayer />
       <RecenterOnUser />
+      <FitViewedZone />
       <PersistMapView />
       <CurrentLocationMarker />
       <LiveTrackOverlay />

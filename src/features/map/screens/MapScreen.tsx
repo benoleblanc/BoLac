@@ -2,6 +2,7 @@ import { MapView } from '@/features/map/components/MapView';
 import { TrackingHud } from '@/features/tracking/components/TrackingHud';
 import { TrackingControls } from '@/features/tracking/components/TrackingControls';
 import { ViewedTripBanner } from '@/features/map/components/ViewedTripBanner';
+import { ViewedZoneBanner } from '@/features/map/components/ViewedZoneBanner';
 import { SearchResultBanner } from '@/features/map/components/SearchResultBanner';
 
 export function MapScreen() {
@@ -19,6 +20,9 @@ export function MapScreen() {
         </div>
         <div className="pointer-events-auto">
           <ViewedTripBanner />
+        </div>
+        <div className="pointer-events-auto">
+          <ViewedZoneBanner />
         </div>
         <div className="pointer-events-auto">
           <SearchResultBanner />

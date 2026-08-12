@@ -307,9 +307,11 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
       await db.trips.add(trip);
 
       // Évite d'afficher simultanément un trajet historique (ou un repère
-      // de recherche) et la trace en cours d'enregistrement sur la carte.
+      // de recherche, ou une zone hors ligne consultée) et la trace en
+      // cours d'enregistrement sur la carte.
       useMapStore.getState().setViewedTrip(null);
       useMapStore.getState().setSearchResult(null);
+      useMapStore.getState().setViewedZone(null);
 
       elevationBaselineM = null;
       set({

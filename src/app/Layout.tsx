@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { BottomNav } from '@/app/BottomNav';
-import { ThemeToggle } from '@/features/settings/components/ThemeToggle';
+import { PreferencesButton } from '@/features/settings/components/PreferencesButton';
 import { useUiStore } from '@/stores/uiStore';
 
 const SCREEN_TITLES: Record<string, string> = {
@@ -37,7 +37,7 @@ export function Layout({ children }: LayoutProps) {
             </h1>
           </div>
         </div>
-        <ThemeToggle />
+        <PreferencesButton />
       </header>
 
       <main className="flex-1 overflow-hidden">{children}</main>

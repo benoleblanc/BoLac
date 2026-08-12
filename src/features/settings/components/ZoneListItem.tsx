@@ -3,6 +3,8 @@ import type { DownloadZone } from '@/types/tile';
 import { formatBytes } from '@/lib/format';
 import { deleteZone, renameZone } from '@/lib/db/tiles.repo';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useMapStore } from '@/stores/mapStore';
+import { useUiStore } from '@/stores/uiStore';
 
 const dateFormatter = new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium' });
 
@@ -36,11 +38,30 @@ function CheckIcon() {
   );
 }
 
+function MapPinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
 export function ZoneListItem({ zone }: { zone: DownloadZone }) {
+  const setViewedZone = useMapStore((s) => s.setViewedZone);
+  const setActiveScreen = useUiStore((s) => s.setActiveScreen);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [draftName, setDraftName] = useState(zone.name);
+
+  // Cadre directement sur cette zone hors ligne, utile pour naviguer entre
+  // plusieurs zones téléchargées sans dépendre du GPS (souvent lent ou
+  // indisponible justement là où on a téléchargé des cartes à l'avance).
+  function handleViewOnMap() {
+    setViewedZone({ name: zone.name, bounds: zone.bounds });
+    setActiveScreen('map');
+  }
 
   async function handleConfirmDelete() {
     setIsDeleting(true);
@@ -100,6 +121,14 @@ export function ZoneListItem({ zone }: { zone: DownloadZone }) {
         )}
         {!isRenaming && (
           <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={handleViewOnMap}
+              aria-label="Voir cette zone sur la carte"
+              className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            >
+              <MapPinIcon />
+            </button>
             <button
               type="button"
               onClick={startRenaming}
