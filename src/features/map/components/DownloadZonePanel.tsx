@@ -89,7 +89,7 @@ export function DownloadZonePanel({ open, map, onClose }: DownloadZonePanelProps
   return (
     <Portal>
       <div
-        className="fixed inset-0 z-[1100] flex items-end justify-center bg-black/40 p-4 sm:items-center"
+        className="fixed inset-0 z-[1100] flex items-end justify-center bg-black/40 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center"
         role="dialog"
         aria-modal="true"
         aria-label="Télécharger une zone hors ligne"

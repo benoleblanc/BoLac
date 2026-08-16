@@ -45,7 +45,7 @@ export function PhotoLightbox({ photo, onClose }: { photo: Photo | null; onClose
   return (
     <Portal>
       <div
-        className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 p-4"
+        className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
         role="dialog"
         aria-modal="true"
         aria-label="Photo"
