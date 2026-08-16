@@ -1,4 +1,5 @@
 import { registerPlugin } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import type { BackgroundGeolocationPlugin, Location } from '@capacitor-community/background-geolocation';
 import type { RawFix } from '@/lib/geo/rawFix';
 
@@ -28,6 +29,14 @@ export async function startNativeBackgroundWatch(
   onFix: (fix: RawFix) => void,
   onError: (message: string) => void,
 ): Promise<string> {
+  // Le plugin de géolocalisation ne demande lui-même que la permission de
+  // localisation — sans la permission de notification (obligatoire depuis
+  // Android 13), la notification de suivi ne s'affiche jamais, même si le
+  // service tourne bien en arrière-plan. On la demande donc nous-mêmes ici,
+  // avant de démarrer le suivi. Échec silencieux si refusée : le suivi GPS
+  // continue quand même, seule la notification visible manquera.
+  await LocalNotifications.requestPermissions().catch(() => undefined);
+
   return BackgroundGeolocation.addWatcher(
     {
       backgroundTitle: 'Suivi GPS actif',

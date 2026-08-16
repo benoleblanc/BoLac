@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BoLac</string>
+    <string name="title_activity_main">BoLac</string>
+    <string name="package_name">com.benoleblanc.bolac</string>
+    <string name="custom_url_scheme">com.benoleblanc.bolac</string>
+
+    <!-- Notification persistante du suivi GPS en arrière-plan
+         (@capacitor-community/background-geolocation) -->
+    <string name="capacitor_background_geolocation_notification_channel_name">Suivi GPS BoLac</string>
+    <string name="capacitor_background_geolocation_notification_color">#0f172a</string>
+</resources>
