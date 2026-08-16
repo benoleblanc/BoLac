@@ -15,6 +15,10 @@ dev-dist
 .env
 .env.local
 
+# APK de l'appli native, copié ici pour que la synchro OneDrive l'amène sur
+# le téléphone — pas versionné, c'est un binaire regénéré à chaque build.
+BoLac-app/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
