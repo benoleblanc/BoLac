@@ -1,5 +1,6 @@
 import { useTrackingStore } from '@/stores/trackingStore';
 import { formatDistanceKm, formatDuration, formatElevation, formatSpeedKmh } from '@/lib/format';
+import { isNativePlatform } from '@/lib/platform';
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -66,9 +67,11 @@ export function TrackingHud() {
       </p>
       {status === 'recording' && (
         <p className="mt-1 text-center text-[10px] text-slate-400 dark:text-slate-500">
-          {wakeLockActive
-            ? '🔒 Écran maintenu allumé pour un suivi continu'
-            : '⚠️ Garde le téléphone déverrouillé — le suivi peut s’interrompre en veille'}
+          {isNativePlatform()
+            ? '📡 Suivi GPS actif en arrière-plan — le téléphone peut être verrouillé'
+            : wakeLockActive
+              ? '🔒 Écran maintenu allumé pour un suivi continu'
+              : '⚠️ Garde le téléphone déverrouillé — le suivi peut s’interrompre en veille'}
         </p>
       )}
     </div>

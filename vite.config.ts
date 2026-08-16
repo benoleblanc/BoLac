@@ -11,6 +11,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // L'enregistrement du service worker est fait à la main dans main.tsx
+      // (uniquement en contexte web — inutile et redondant dans la coquille
+      // native Capacitor, qui embarque déjà les assets localement).
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/icon.svg'],
       manifest: {
         name: 'BoLac',

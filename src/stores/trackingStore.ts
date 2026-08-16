@@ -4,6 +4,9 @@ import { haversineDistanceMeters } from '@/lib/geo/haversine';
 import { useMapStore } from '@/stores/mapStore';
 import type { Trip, TrackPoint } from '@/types/trip';
 import { DEFAULT_ACTIVITY, type ActivityType } from '@/types/activity';
+import { isNativePlatform } from '@/lib/platform';
+import type { RawFix } from '@/lib/geo/rawFix';
+import { startNativeBackgroundWatch, stopNativeBackgroundWatch } from '@/lib/geo/nativeBackgroundWatch';
 
 export type TrackingStatus = 'idle' | 'recording' | 'paused';
 
@@ -101,6 +104,8 @@ function activeElapsedMs(
 // d'écriture) : volontairement hors du state Zustand, ce ne sont pas des
 // données affichables mais des ressources à nettoyer nous-mêmes.
 let watchId: number | null = null;
+/** Id du watcher natif (plugin de géolocalisation en arrière-plan) — équivalent de `watchId` côté Capacitor. */
+let nativeWatcherId: string | null = null;
 let tickIntervalId: ReturnType<typeof setInterval> | null = null;
 let unflushedPoints: TrackPoint[] = [];
 let wakeLockSentinel: WakeLockSentinel | null = null;
@@ -121,7 +126,12 @@ async function flushPoints(): Promise<void> {
 }
 
 function stopWatch(): void {
-  if (watchId !== null) {
+  if (isNativePlatform()) {
+    if (nativeWatcherId !== null) {
+      void stopNativeBackgroundWatch(nativeWatcherId);
+      nativeWatcherId = null;
+    }
+  } else if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
   }
@@ -144,24 +154,37 @@ function describeGeoError(error: GeolocationPositionError): string {
   }
 }
 
+/** Adapte une position de l'API web `navigator.geolocation` vers la forme neutre `RawFix`. */
+function fromGeolocationPosition(position: GeolocationPosition): RawFix {
+  const { latitude, longitude, altitude, accuracy, speed } = position.coords;
+  return {
+    lat: latitude,
+    lon: longitude,
+    elevation: altitude,
+    accuracyM: accuracy,
+    speedMs: typeof speed === 'number' ? speed : null,
+    timestamp: position.timestamp,
+  };
+}
+
 export const useTrackingStore = create<TrackingState>((set, get) => {
-  function handlePosition(position: GeolocationPosition): void {
+  function handleFix(fix: RawFix): void {
     const state = get();
     if (state.status !== 'recording' || !state.activeTripId) return;
 
-    const { latitude, longitude, altitude, accuracy, speed } = position.coords;
-    set({ currentAccuracyM: accuracy, gpsError: null });
+    const { lat, lon, elevation, accuracyM, speedMs, timestamp } = fix;
+    set({ currentAccuracyM: accuracyM, gpsError: null });
 
     // Signal trop imprécis : on garde l'indicateur de précision à jour mais
     // on n'ajoute pas ce point à la trace pour ne pas fausser la distance.
-    if (accuracy > MAX_ACCEPTABLE_ACCURACY_M) return;
+    if (accuracyM > MAX_ACCEPTABLE_ACCURACY_M) return;
 
     const last = state.lastPoint;
     let incrementalDistance = 0;
     let deltaSeconds = 0;
     if (last) {
-      incrementalDistance = haversineDistanceMeters(last, { lat: latitude, lon: longitude });
-      deltaSeconds = (position.timestamp - last.timestamp) / 1000;
+      incrementalDistance = haversineDistanceMeters(last, { lat, lon });
+      deltaSeconds = (timestamp - last.timestamp) / 1000;
       if (deltaSeconds > 0 && incrementalDistance / deltaSeconds > MAX_PLAUSIBLE_SPEED_MS) {
         return; // saut GPS improbable, on ignore ce point
       }
@@ -170,12 +193,12 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
     const point: TrackPoint = {
       id: crypto.randomUUID(),
       tripId: state.activeTripId,
-      lat: latitude,
-      lon: longitude,
-      elevation: altitude,
-      accuracyM: accuracy,
-      speedMs: typeof speed === 'number' ? speed : null,
-      timestamp: position.timestamp,
+      lat,
+      lon,
+      elevation,
+      accuracyM,
+      speedMs,
+      timestamp,
     };
 
     const distanceMeters = state.distanceMeters + incrementalDistance;
@@ -191,15 +214,15 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
     // les variations sous ELEVATION_NOISE_THRESHOLD_M, et la référence
     // n'avance que quand un vrai changement est détecté.
     let { elevationGainM, elevationLossM } = state;
-    if (altitude !== null) {
+    if (elevation !== null) {
       if (elevationBaselineM === null) {
-        elevationBaselineM = altitude;
+        elevationBaselineM = elevation;
       } else {
-        const deltaElevation = altitude - elevationBaselineM;
+        const deltaElevation = elevation - elevationBaselineM;
         if (Math.abs(deltaElevation) >= ELEVATION_NOISE_THRESHOLD_M) {
           if (deltaElevation > 0) elevationGainM += deltaElevation;
           else elevationLossM += -deltaElevation;
-          elevationBaselineM = altitude;
+          elevationBaselineM = elevation;
         }
       }
     }
@@ -211,7 +234,7 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
       currentSpeedMs,
       avgSpeedMs,
       elapsedMs: elapsedNowMs,
-      currentElevationM: altitude,
+      currentElevationM: elevation,
       elevationGainM,
       elevationLossM,
     });
@@ -227,19 +250,32 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
   }
 
   function startWatch(): void {
-    if (watchId === null) {
-      watchId = navigator.geolocation.watchPosition(handlePosition, handlePositionError, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 10000,
-      });
+    if (isNativePlatform()) {
+      if (nativeWatcherId === null) {
+        startNativeBackgroundWatch(handleFix, (message) => set({ gpsError: message }))
+          .then((id) => {
+            nativeWatcherId = id;
+          })
+          .catch((err: unknown) => {
+            set({ gpsError: `Suivi GPS natif indisponible : ${String(err)}` });
+          });
+      }
+    } else if (watchId === null) {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => handleFix(fromGeolocationPosition(position)),
+        handlePositionError,
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
+      );
     }
     if (tickIntervalId === null) {
       tickIntervalId = setInterval(() => {
         set((s) => ({ elapsedMs: activeElapsedMs(s, Date.now()) }));
       }, 1000);
     }
-    void requestWakeLock();
+    // Sur natif, le service de premier plan garde l'app active écran
+    // éteint — le Wake Lock web (qui force l'écran à rester allumé) n'y
+    // apporte rien et coûterait de la batterie pour rien.
+    if (!isNativePlatform()) void requestWakeLock();
   }
 
   /**
@@ -277,9 +313,9 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
   // Le navigateur relâche automatiquement le wake lock quand l'onglet perd
   // la visibilité (changement d'app, écran éteint manuellement) ; on le
   // redemande dès qu'on redevient visible, tant que l'enregistrement est
-  // toujours en cours.
+  // toujours en cours. Sans objet sur natif (pas de wake lock demandé).
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && get().status === 'recording') {
+    if (!isNativePlatform() && document.visibilityState === 'visible' && get().status === 'recording') {
       void requestWakeLock();
     }
   });
