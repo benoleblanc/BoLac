@@ -7,7 +7,7 @@ const SCREEN_TITLES: Record<string, string> = {
   map: 'Carte',
   trips: 'Trajets',
   waypoints: 'Waypoints',
-  export: 'Export',
+  export: 'Sauvegarde',
   settings: 'Cartes hors ligne',
 };
 

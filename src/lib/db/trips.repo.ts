@@ -1,5 +1,10 @@
 import { db } from '@/lib/db/db';
 
+/** Renomme un trajet déjà enregistré. */
+export async function renameTrip(tripId: string, name: string): Promise<void> {
+  await db.trips.update(tripId, { name });
+}
+
 /**
  * Supprime un trajet et les données qu'il possède en propre (sa trace GPS,
  * ses photos). Les waypoints rattachés ne sont pas supprimés — ce sont des

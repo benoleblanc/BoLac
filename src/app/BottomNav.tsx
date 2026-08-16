@@ -59,7 +59,7 @@ const NAV_ITEMS: NavItem[] = [
   { screen: 'map', label: 'Carte', icon: <MapIcon /> },
   { screen: 'trips', label: 'Trajets', icon: <TripsIcon /> },
   { screen: 'waypoints', label: 'Waypoints', icon: <WaypointIcon /> },
-  { screen: 'export', label: 'Export', icon: <ExportIcon /> },
+  { screen: 'export', label: 'Sauvegarde', icon: <ExportIcon /> },
   { screen: 'settings', label: 'Hors ligne', icon: <OfflineMapIcon /> },
 ];
 

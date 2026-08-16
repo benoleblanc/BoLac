@@ -23,6 +23,11 @@ export async function createWaypoint(input: CreateWaypointInput): Promise<Waypoi
   return waypoint;
 }
 
+/** Renomme un waypoint déjà enregistré. */
+export async function renameWaypoint(waypointId: string, name: string): Promise<void> {
+  await db.waypoints.update(waypointId, { name });
+}
+
 /** Supprime un waypoint et les photos qui lui sont rattachées. */
 export async function deleteWaypoint(waypointId: string): Promise<void> {
   await db.transaction('rw', db.waypoints, db.photos, async () => {
