@@ -86,7 +86,7 @@ export function TripListItem({ trip }: { trip: Trip }) {
           </button>
         </div>
       </div>
-      <dl className="mt-2 grid grid-cols-4 gap-2 text-center text-sm">
+      <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
         <div>
           <dt className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Distance</dt>
           <dd className="font-semibold tabular-nums">{formatDistanceKm(trip.distanceMeters)}</dd>
@@ -99,9 +99,15 @@ export function TripListItem({ trip }: { trip: Trip }) {
           <dt className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Moyenne</dt>
           <dd className="font-semibold tabular-nums">{formatKmh(trip.avgSpeedKmh)}</dd>
         </div>
+      </dl>
+      <dl className="mt-2 grid grid-cols-2 gap-2 text-center text-sm">
         <div>
           <dt className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Dénivelé +</dt>
           <dd className="font-semibold tabular-nums">{formatElevation(trip.elevationGainM)}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Dénivelé -</dt>
+          <dd className="font-semibold tabular-nums">{formatElevation(trip.elevationLossM)}</dd>
         </div>
       </dl>
 
