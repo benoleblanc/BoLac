@@ -6,6 +6,16 @@ function formatDelayLabel(ms: number): string {
   return `${ms / 1000} s`;
 }
 
+const buildTimeFormatter = new Intl.DateTimeFormat('fr-CA', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
+
+/** Ex. "Compilée le 17 août 2026, 14 h 32" — pour vérifier qu'une mise à jour a bien été installée. */
+function formatBuildTime(): string {
+  return buildTimeFormatter.format(new Date(__BUILD_TIME__));
+}
+
 interface PreferencesPanelProps {
   open: boolean;
   onClose: () => void;
@@ -59,7 +69,11 @@ export function PreferencesPanel({ open, onClose }: PreferencesPanelProps) {
             </div>
           </div>
 
-          <div className="mt-4 flex justify-end">
+          <p className="mt-4 text-center text-[10px] text-slate-400 dark:text-slate-500">
+            {formatBuildTime()}
+          </p>
+
+          <div className="mt-2 flex justify-end">
             <button
               type="button"
               onClick={onClose}

@@ -6,6 +6,12 @@ import path from 'node:path';
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Horodatage de compilation, affiché dans Préférences — le seul moyen
+  // fiable de savoir si une mise à jour a bien été installée (le
+  // "Version 1.0" d'Android ne bouge jamais, on ne le fait pas évoluer).
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     tailwindcss(),
