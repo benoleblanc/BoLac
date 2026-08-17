@@ -3,10 +3,12 @@ import { db } from '@/lib/db/db';
 import { haversineDistanceMeters } from '@/lib/geo/haversine';
 import { useMapStore } from '@/stores/mapStore';
 import type { Trip, TrackPoint } from '@/types/trip';
-import { DEFAULT_ACTIVITY, type ActivityType } from '@/types/activity';
+import { ACTIVITY_LABELS, DEFAULT_ACTIVITY, type ActivityType } from '@/types/activity';
 import { isNativePlatform } from '@/lib/platform';
 import type { RawFix } from '@/lib/geo/rawFix';
 import { startNativeBackgroundWatch, stopNativeBackgroundWatch } from '@/lib/geo/nativeBackgroundWatch';
+import { updateLiveStatsNotification, clearLiveStatsNotification } from '@/lib/geo/liveStatsNotification';
+import { formatDistanceKm, formatDuration, formatSpeedKmh } from '@/lib/format';
 
 export type TrackingStatus = 'idle' | 'recording' | 'paused';
 
@@ -154,6 +156,22 @@ function describeGeoError(error: GeolocationPositionError): string {
   }
 }
 
+/**
+ * Texte de la notification "stats en direct" (voir liveStatsNotification.ts)
+ * — se répercute automatiquement sur une montre connectée (Wear OS), sans
+ * code spécifique à la montre.
+ */
+function buildLiveStatsText(
+  state: Pick<TrackingState, 'activityType' | 'distanceMeters' | 'currentSpeedMs' | 'elapsedMs' | 'status'>,
+): { title: string; body: string } {
+  const title = `BoLac — ${ACTIVITY_LABELS[state.activityType]}`;
+  const body =
+    state.status === 'paused'
+      ? `En pause · ${formatDistanceKm(state.distanceMeters)} parcourus`
+      : `${formatDistanceKm(state.distanceMeters)} · ${formatSpeedKmh(state.currentSpeedMs)} · ${formatDuration(state.elapsedMs)}`;
+  return { title, body };
+}
+
 /** Adapte une position de l'API web `navigator.geolocation` vers la forme neutre `RawFix`. */
 function fromGeolocationPosition(position: GeolocationPosition): RawFix {
   const { latitude, longitude, altitude, accuracy, speed } = position.coords;
@@ -268,14 +286,33 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
       );
     }
     if (tickIntervalId === null) {
+      let tickCount = 0;
       tickIntervalId = setInterval(() => {
+        tickCount += 1;
         set((s) => ({ elapsedMs: activeElapsedMs(s, Date.now()) }));
+        // Une mise à jour toutes les 5 s suffit largement pour un affichage
+        // au poignet, et évite de solliciter le système de notifications
+        // à chaque tic d'une seconde.
+        if (isNativePlatform() && tickCount % 5 === 0) {
+          const s = get();
+          if (s.status === 'recording') {
+            const { title, body } = buildLiveStatsText(s);
+            void updateLiveStatsNotification(title, body);
+          }
+        }
       }, 1000);
     }
     // Sur natif, le service de premier plan garde l'app active écran
     // éteint — le Wake Lock web (qui force l'écran à rester allumé) n'y
     // apporte rien et coûterait de la batterie pour rien.
     if (!isNativePlatform()) void requestWakeLock();
+
+    // Affiche tout de suite une première version (avant même la première
+    // position GPS), pour que la montre montre quelque chose sans attendre.
+    if (isNativePlatform()) {
+      const { title, body } = buildLiveStatsText(get());
+      void updateLiveStatsNotification(title, body);
+    }
   }
 
   /**
@@ -366,6 +403,10 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
       stopWatch();
       void releaseWakeLock();
       set((s) => ({ status: 'paused', pausedAt: now, elapsedMs: activeElapsedMs(s, now) }));
+      if (isNativePlatform()) {
+        const { title, body } = buildLiveStatsText(get());
+        void updateLiveStatsNotification(title, body);
+      }
     },
 
     resumeRecording: () => {
@@ -380,6 +421,7 @@ export const useTrackingStore = create<TrackingState>((set, get) => {
     stopRecording: async (finalName) => {
       stopWatch();
       void releaseWakeLock();
+      if (isNativePlatform()) void clearLiveStatsNotification();
       await flushPoints();
 
       const state = get();
